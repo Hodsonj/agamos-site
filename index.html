@@ -388,7 +388,7 @@
     // colonnade: hold for the intro, then chapters pass through the columns
     const p=prog(colTrack);
     const bg=clamp((p-.22)/.6,0,1);
-    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String(1-bg);
+    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String(1-clamp((p-.08)/.24,0,1));
     const fade=clamp((p-.2)/.2,0,1);
     document.getElementById('cols').style.opacity=String(1-fade*.74);
     document.getElementById('cols').style.transform=`translateY(${fade*6}vh) scale(${1-fade*.06})`;
