@@ -123,6 +123,8 @@
   @media (prefers-reduced-motion:reduce){.sun,.bird{animation:none!important;opacity:.8}}
   /* colonnade */
   .col-track{height:520vh;position:relative}
+  html{scroll-snap-type:y proximity}
+  .snap{position:absolute;left:0;width:1px;height:1px;scroll-snap-align:start;pointer-events:none}
   .colonnade .tag,.colonnade .cue{z-index:2}
   .colonnade{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--sky)}
   .cols{position:absolute;left:0;right:0;bottom:0;height:100%;display:grid;grid-template-columns:repeat(6,1fr);padding:0 6vw;align-items:end;pointer-events:none}
@@ -221,7 +223,7 @@
   <ul><li><a href="#seasons">Seasons</a></li><li><a href="#episodes">Episodes</a></li><li><a href="#casting">Casting</a></li><li><a href="https://www.youtube.com/@AgamosTV" target="_blank" rel="noopener">YouTube</a></li></ul>
 </div></nav>
 
-<div class="col-track" id="colTrack">
+<div class="col-track" id="colTrack"><div class="snap" style="top:0"></div>
   <section class="colonnade" id="top">
     <div class="sky" aria-hidden="true"><div class="sun"></div><i class="bird" style="top:22%;transform:scale(1);--dur:70s;--del:-10s"></i><i class="bird" style="top:25%;transform:scale(.7);--dur:85s;--del:-40s"></i><i class="bird" style="top:19%;transform:scale(.8);--dur:78s;--del:-55s"></i></div>
     <div class="tag" id="tag"><span class="eyebrow">A Greek-American dating show</span><p>Ancient wisdom. Modern romance.</p></div>
@@ -383,10 +385,22 @@
 
   function prog(track){ const r=track.getBoundingClientRect(); const h=track.offsetHeight-innerHeight; return clamp(-r.top/h,0,1); }
 
+  // chapter layout: an intro hold, then equal windows; snap targets sit at each chapter's centre
+  const start=.2, span=(1-start)/chapters.length;
+  function placeSnaps(){
+    colTrack.querySelectorAll('.snap:not(:first-child)').forEach(n=>n.remove());
+    const h=colTrack.offsetHeight-innerHeight;
+    chapters.forEach((_,i)=>{ const d=document.createElement('div'); d.className='snap'; d.style.top=((start+(i+.5)*span)*h)+'px'; colTrack.appendChild(d); });
+  }
+  placeSnaps(); addEventListener('resize',placeSnaps);
+
+  let pS=0, raf=null;
   function frame(){
     if(reduce) return;
     // colonnade: hold for the intro, then chapters pass through the columns
-    const p=prog(colTrack);
+    const target=prog(colTrack);
+    pS+= (target-pS)*.14; if(Math.abs(target-pS)<.0005) pS=target;
+    const p=pS;
     const bg=clamp((p-.22)/.6,0,1);
     colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String(1-clamp((p-.08)/.24,0,1));
     const fade=clamp((p-.2)/.2,0,1);
@@ -394,22 +408,21 @@
     document.getElementById('cols').style.transform=`translateY(${fade*6}vh) scale(${1-fade*.06})`;
     document.getElementById('tag').style.opacity=String(1-clamp(p/.12,0,1));
     document.querySelector('.cue').style.opacity=String(.7*(1-clamp(p/.08,0,1)));
-    const start=.2, span=(1-start)/chapters.length;
     let active=0;
     chapters.forEach((ch,i)=>{
       const a=start+i*span, b=a+span;
-      const inW=clamp((p-a)/(span*.28),0,1), outW=clamp((b-p)/(span*.22),0,1);
+      const inW=ease(clamp((p-a)/(span*.36),0,1)), outW=ease(clamp((b-p)/(span*.3),0,1));
       const o=Math.min(inW,outW);
-      ch.style.opacity=String(o); ch.style.transform=`translateY(${(1-inW)*30 - (1-outW)*30}px)`;
+      ch.style.opacity=String(o); ch.style.transform=`translateY(${(1-inW)*26 - (1-outW)*26}px) scale(${.985+o*.015})`;
       if(p>=a&&p<b) active=i;
     });
     dots.forEach((d,i)=>d.classList.toggle('on',i===active));
     document.getElementById('progress').style.opacity=String(clamp((p-.18)/.08,0,1));
 
   }
-  let ticking=false;
-  addEventListener('scroll',()=>{ if(!ticking){ requestAnimationFrame(()=>{frame();ticking=false;}); ticking=true; } },{passive:true});
-  addEventListener('resize',frame); frame();
+  function loop(){ frame(); if(Math.abs(prog(colTrack)-pS)>.0005){ raf=requestAnimationFrame(loop); } else { raf=null; } }
+  function kick(){ if(!raf) raf=requestAnimationFrame(loop); }
+  addEventListener('scroll',kick,{passive:true}); addEventListener('resize',kick); kick();
 
   // seasons rail: drag to scroll sideways (wheel/trackpad horizontal scroll works natively)
   let down=false,sx=0,sl=0,moved=false;
