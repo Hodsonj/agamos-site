@@ -89,7 +89,8 @@
   .loaded .sparkle .glow{animation:glow 0.667s ease-out calc(var(--vd) + var(--gd)) both}
   .sparkle i{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;opacity:0;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
   .loaded .sparkle i:not(.twin){animation:spark 0.583s ease-out var(--sd) both}
-  .sparkle i.twin{width:12px;height:12px;margin:-6px 0 0 -6px}
+  .sparkle i.twin{width:12px;height:12px;margin:-6px 0 0 -6px;z-index:2}
+  .wisp{position:absolute;left:0;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,.35) 45%,rgba(255,255,255,0) 70%);filter:blur(1.5px);pointer-events:none;will-change:transform,opacity}
   .sparkle i:nth-child(2){--dx:-58px;--dy:-44px;--sd:calc(var(--vd) + var(--gd) + 0.0167s)} .sparkle i:nth-child(3){--dx:52px;--dy:-60px;--sd:calc(var(--vd) + var(--gd) + 0.0417s);width:10px;height:10px}
   .sparkle i:nth-child(4){--dx:70px;--dy:8px;--sd:calc(var(--vd) + var(--gd) + 0.075s)} .sparkle i:nth-child(5){--dx:-66px;--dy:18px;--sd:calc(var(--vd) + var(--gd) + 0.0333s);width:9px;height:9px}
   .sparkle i:nth-child(6){--dx:-20px;--dy:-74px;--sd:calc(var(--vd) + var(--gd) + 0.0917s);width:11px;height:11px} .sparkle i:nth-child(7){--dx:34px;--dy:56px;--sd:calc(var(--vd) + var(--gd) + 0.0583s)}
@@ -348,7 +349,27 @@
           frames.push({transform:`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${sc.toFixed(3)}) rotate(${(t*140).toFixed(0)}deg)`,opacity:op,offset:u});
         }
         const a=el.animate(frames,{duration:1050,delay:40+i*50,easing:'linear',fill:'forwards'});
-        a.onfinish=()=>{ if(++done===twins.length){ skyEl.classList.add('on'); } };
+        // misty trail: soft puffs left behind at the spark's position, drifting and fading
+        const host=el.parentElement, hb=host.getBoundingClientRect();
+        let last=0, alive=true;
+        (function trail(now){
+          if(!alive) return;
+          if(now-last>26){
+            last=now;
+            const r=el.getBoundingClientRect();
+            if(r.width){
+              const w=document.createElement('span'); w.className='wisp';
+              const px=r.left+r.width/2-hb.left, py=r.top+r.height/2-hb.top;
+              host.appendChild(w);
+              w.animate([
+                {transform:`translate(${px}px,${py}px) scale(.55)`,opacity:.75},
+                {transform:`translate(${px+(Math.random()-.5)*10}px,${py+6+Math.random()*10}px) scale(1.7)`,opacity:0}
+              ],{duration:560+Math.random()*200,easing:'ease-out',fill:'forwards'}).onfinish=()=>w.remove();
+            }
+          }
+          requestAnimationFrame(trail);
+        })(0);
+        a.onfinish=()=>{ alive=false; if(++done===twins.length){ skyEl.classList.add('on'); } };
       });
     },(vd+gd)*1000);
   }
