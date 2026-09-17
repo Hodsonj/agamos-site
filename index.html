@@ -105,6 +105,16 @@
   .col.vine .v .leaf.d{fill:#6E8C2A}
   /* the heart O */
 
+  /* sky: a soft sun and dawn gradient, fading in after the columns settle */
+  .sky{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,#B3C8EE 0%,#98B6E4 55%,#98B6E4 100%);opacity:0;transition:opacity 1.6s ease}
+  .loaded .sky{opacity:1;transition-delay:1.1s}
+  .sun{position:absolute;right:12%;top:9%;width:min(24vw,150px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 45% 40%,#FFF9EA,#F9EBCB 60%,#F3E0B5);opacity:.85;box-shadow:0 0 0 18px rgba(255,255,255,.10),0 0 0 44px rgba(255,255,255,.05),0 0 80px 16px rgba(255,236,190,.35);animation:breathe 7s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  .bird{position:absolute;width:26px;height:10px;border:2px solid rgba(14,27,58,.32);border-width:2px 0 0 0;border-radius:50% 50% 0 0;opacity:.7;animation:fly var(--dur) linear infinite;animation-delay:var(--del)}
+  .bird::before,.bird::after{content:"";position:absolute;top:-2px;width:13px;height:10px;border:2px solid rgba(14,27,58,.32);border-width:2px 0 0 0;border-radius:50% 50% 0 0}
+  .bird::before{left:-1px;transform:rotate(-12deg)} .bird::after{right:-1px;transform:rotate(12deg)}
+  @keyframes fly{from{transform:translateX(-10vw) translateY(0)}50%{transform:translateX(50vw) translateY(-8px)}to{transform:translateX(110vw) translateY(0)}}
+  @media (prefers-reduced-motion:reduce){.sun,.bird{animation:none} .sky{transition:none;opacity:1}}
   /* colonnade */
   .col-track{height:520vh;position:relative}
   .colonnade .tag,.colonnade .cue{z-index:2}
@@ -207,6 +217,7 @@
 
 <div class="col-track" id="colTrack">
   <section class="colonnade" id="top">
+    <div class="sky" aria-hidden="true"><div class="sun"></div><i class="bird" style="top:22%;transform:scale(1);--dur:70s;--del:-10s"></i><i class="bird" style="top:25%;transform:scale(.7);--dur:85s;--del:-40s"></i><i class="bird" style="top:19%;transform:scale(.8);--dur:78s;--del:-55s"></i></div>
     <div class="tag" id="tag"><span class="eyebrow">A Greek-American dating show</span><p>Ancient wisdom. Modern romance.</p></div>
     <div class="cols" id="cols">
       <div class="col stone"><div class="letter"><svg style="width:.821em" viewBox="0 0 821 1000" aria-hidden="true"><use href="#gA1"></use></svg></div><div class="cap"></div><div class="cap2"></div><div class="shaft"></div><div class="base"></div></div>
@@ -313,7 +324,7 @@
   const chapters=[...document.querySelectorAll('#chapters .chapter')];
   const dots=[...document.querySelectorAll('#progress i')];
   const seasonsTrack=document.getElementById('seasons'), rail=document.getElementById('rail');
-  const colonnade=document.querySelector('.colonnade');
+  const colonnade=document.querySelector('.colonnade'), sky=document.querySelector('.sky');
 
   function prog(track){ const r=track.getBoundingClientRect(); const h=track.offsetHeight-innerHeight; return clamp(-r.top/h,0,1); }
 
@@ -322,7 +333,7 @@
     // colonnade: hold for the intro, then chapters pass through the columns
     const p=prog(colTrack);
     const bg=clamp((p-.22)/.6,0,1);
-    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`;
+    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String((1-bg)*(document.body.classList.contains('loaded')?1:0));
     const fade=clamp((p-.2)/.2,0,1);
     document.getElementById('cols').style.opacity=String(1-fade*.74);
     document.getElementById('cols').style.transform=`translateY(${fade*6}vh) scale(${1-fade*.06})`;
