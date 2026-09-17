@@ -337,13 +337,17 @@
       const dx=sun.left+sun.width/2-ox, dy=sun.top+sun.height/2-oy;
       let done=0;
       twins.forEach((el,i)=>{
-        const side=i?1:-1, lift=Math.abs(dx)*.22+50+i*18, spread=18*side;
-        const a=el.animate([
-          {transform:'translate(0,0) scale(.3) rotate(0deg)',opacity:0},
-          {transform:`translate(${dx*.12+spread}px,${dy*.12-lift*.5}px) scale(1) rotate(60deg)`,opacity:1,offset:.18},
-          {transform:`translate(${dx*.55+spread*1.6}px,${Math.min(dy,0)-lift}px) scale(1.15) rotate(180deg)`,opacity:1,offset:.55},
-          {transform:`translate(${dx}px,${dy}px) scale(.4) rotate(300deg)`,opacity:0}
-        ],{duration:820,delay:120+i*70,easing:'cubic-bezier(.35,.1,.35,1)',fill:'forwards'});
+        // smooth arc: quadratic curve sampled into small steps, eased like the burst sparks
+        const side=i?1:-1, cx=dx*.35+40*side, cy=Math.min(dy,0)-Math.abs(dx)*.28-70-i*22;
+        const N=28, frames=[];
+        for(let k=0;k<=N;k++){
+          const u=k/N, t=1-Math.pow(1-u,2.4);               // ease-out progress along the path
+          const x=(1-t)*(1-t)*0+2*(1-t)*t*cx+t*t*dx, y=2*(1-t)*t*cy+t*t*dy;
+          const sc=.35+.65*Math.sin(Math.min(t*1.15,1)*Math.PI/2)*(1-.35*t);
+          const op=t<.85?1:1-(t-.85)/.15;
+          frames.push({transform:`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${sc.toFixed(3)}) rotate(${(t*140).toFixed(0)}deg)`,opacity:op,offset:u});
+        }
+        const a=el.animate(frames,{duration:1050,delay:40+i*50,easing:'linear',fill:'forwards'});
         a.onfinish=()=>{ if(++done===twins.length){ skyEl.classList.add('on'); } };
       });
     },(vd+gd)*1000);
