@@ -346,9 +346,9 @@
       const anim=shoot.animate([
         {transform:`translate(${x0}px,${y0}px) scale(.5)`,opacity:1},
         {transform:`translate(${xm}px,${ym}px) scale(1.1)`,opacity:1,offset:.5},
-        {transform:`translate(${x1}px,${y1}px) scale(.3)`,opacity:.6}
+        {transform:`translate(${x1}px,${y1}px) scale(.3)`,opacity:0}
       ],{duration:720,easing:'cubic-bezier(.3,.2,.4,1)',fill:'forwards'});
-      anim.onfinish=()=>{ shoot.style.opacity='0'; skyEl.classList.add('on'); };
+      anim.onfinish=()=>{ anim.cancel(); shoot.style.opacity='0'; skyEl.classList.add('on'); };
     },(vd+gd)*1000+60);
   }
 
