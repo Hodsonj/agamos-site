@@ -386,7 +386,7 @@
   function prog(track){ const r=track.getBoundingClientRect(); const h=track.offsetHeight-innerHeight; return clamp(-r.top/h,0,1); }
 
   // chapter layout: an intro hold, then equal windows; snap targets sit at each chapter's centre
-  const start=.2, span=(1-start)/chapters.length;
+  const start=.08, span=(1-start)/chapters.length;
   function placeSnaps(){
     colTrack.querySelectorAll('.snap:not(:first-child)').forEach(n=>n.remove());
     const h=colTrack.offsetHeight-innerHeight;
@@ -401,13 +401,13 @@
     const target=prog(colTrack);
     pS+= (target-pS)*.14; if(Math.abs(target-pS)<.0005) pS=target;
     const p=pS;
-    const bg=clamp((p-.22)/.6,0,1);
-    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String(1-clamp((p-.08)/.24,0,1));
-    const fade=clamp((p-.2)/.2,0,1);
+    const bg=clamp((p-.1)/.55,0,1);
+    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String(1-clamp((p-.03)/.16,0,1));
+    const fade=clamp((p-.06)/.16,0,1);
     document.getElementById('cols').style.opacity=String(1-fade*.74);
     document.getElementById('cols').style.transform=`translateY(${fade*6}vh) scale(${1-fade*.06})`;
-    document.getElementById('tag').style.opacity=String(1-clamp(p/.12,0,1));
-    document.querySelector('.cue').style.opacity=String(.7*(1-clamp(p/.08,0,1)));
+    document.getElementById('tag').style.opacity=String(1-clamp(p/.06,0,1));
+    document.querySelector('.cue').style.opacity=String(.7*(1-clamp(p/.05,0,1)));
     let active=0;
     chapters.forEach((ch,i)=>{
       const a=start+i*span, b=a+span;
@@ -417,7 +417,7 @@
       if(p>=a&&p<b) active=i;
     });
     dots.forEach((d,i)=>d.classList.toggle('on',i===active));
-    document.getElementById('progress').style.opacity=String(clamp((p-.18)/.08,0,1));
+    document.getElementById('progress').style.opacity=String(clamp((p-.06)/.06,0,1));
 
   }
   function loop(){ frame(); if(Math.abs(prog(colTrack)-pS)>.0005){ raf=requestAnimationFrame(loop); } else { raf=null; } }
