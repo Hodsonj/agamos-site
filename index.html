@@ -106,15 +106,23 @@
   /* the heart O */
 
   /* sky: a soft sun and dawn gradient, fading in after the columns settle */
-  .sky{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,#B3C8EE 0%,#98B6E4 55%,#98B6E4 100%);opacity:0;transition:opacity 1.1s ease}
-  .loaded .sky{opacity:1;transition-delay:.5s}
-  .sun{position:absolute;right:12%;top:9%;width:min(24vw,150px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 45% 40%,#FFF9EA,#F9EBCB 60%,#F3E0B5);opacity:.85;box-shadow:0 0 0 18px rgba(255,255,255,.10),0 0 0 44px rgba(255,255,255,.05),0 0 80px 16px rgba(255,236,190,.35);animation:breathe 7s ease-in-out infinite}
+  .sky{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,#B3C8EE 0%,#98B6E4 55%,#98B6E4 100%)}
+  .sun,.bird{opacity:0}
+  .sky.on .sun{animation:breathe 7s ease-in-out 1s infinite,bloom .9s cubic-bezier(.2,.8,.2,1) both}
+  .sky.on .bird{animation-name:fly,appear;animation-duration:var(--dur),1.2s;animation-timing-function:linear,ease;animation-delay:var(--del),.15s;animation-iteration-count:infinite,1;animation-fill-mode:none,forwards}
+  @keyframes bloom{0%{opacity:0;transform:scale(.55)}60%{opacity:.95;transform:scale(1.06)}100%{opacity:.85;transform:scale(1)}}
+  @keyframes appear{to{opacity:.7}}
+  /* the shooting star: one spark that leaves the heart and lights the sun */
+  .shoot{position:absolute;left:0;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;opacity:0;pointer-events:none;z-index:3}
+  .shoot .star{position:absolute;inset:0;background:#fff;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
+  .shoot .tail{position:absolute;right:50%;top:50%;height:3px;width:90px;margin-top:-1.5px;transform-origin:100% 50%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.9));border-radius:2px}
+  .sun{position:absolute;right:12%;top:9%;transform-origin:50% 50%;width:min(24vw,150px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 45% 40%,#FFF9EA,#F9EBCB 60%,#F3E0B5);opacity:.85;box-shadow:0 0 0 18px rgba(255,255,255,.10),0 0 0 44px rgba(255,255,255,.05),0 0 80px 16px rgba(255,236,190,.35);animation:breathe 7s ease-in-out infinite}
   @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-  .bird{position:absolute;width:26px;height:10px;border:2px solid rgba(14,27,58,.32);border-width:2px 0 0 0;border-radius:50% 50% 0 0;opacity:.7;animation:fly var(--dur) linear infinite;animation-delay:var(--del)}
+  .bird{position:absolute;width:26px;height:10px;border:2px solid rgba(14,27,58,.32);border-width:2px 0 0 0;border-radius:50% 50% 0 0}
   .bird::before,.bird::after{content:"";position:absolute;top:-2px;width:13px;height:10px;border:2px solid rgba(14,27,58,.32);border-width:2px 0 0 0;border-radius:50% 50% 0 0}
   .bird::before{left:-1px;transform:rotate(-12deg)} .bird::after{right:-1px;transform:rotate(12deg)}
   @keyframes fly{from{transform:translateX(-10vw) translateY(0)}50%{transform:translateX(50vw) translateY(-8px)}to{transform:translateX(110vw) translateY(0)}}
-  @media (prefers-reduced-motion:reduce){.sun,.bird{animation:none} .sky{transition:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.sun,.bird{animation:none!important;opacity:.8} .shoot{display:none}}
   /* colonnade */
   .col-track{height:520vh;position:relative}
   .colonnade .tag,.colonnade .cue{z-index:2}
@@ -217,6 +225,7 @@
 
 <div class="col-track" id="colTrack">
   <section class="colonnade" id="top">
+    <div class="shoot" id="shoot" aria-hidden="true"><div class="tail"></div><div class="star"></div></div>
     <div class="sky" aria-hidden="true"><div class="sun"></div><i class="bird" style="top:22%;transform:scale(1);--dur:70s;--del:-10s"></i><i class="bird" style="top:25%;transform:scale(.7);--dur:85s;--del:-40s"></i><i class="bird" style="top:19%;transform:scale(.8);--dur:78s;--del:-55s"></i></div>
     <div class="tag" id="tag"><span class="eyebrow">A Greek-American dating show</span><p>Ancient wisdom. Modern romance.</p></div>
     <div class="cols" id="cols">
@@ -317,7 +326,31 @@
   const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
 
   // intro: play once on load
-  requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('loaded')));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ document.body.classList.add('loaded'); scheduleShot(); }));
+
+  // shooting star: leaves the heart as it lands, arcs to the sun, lights it (and the gulls) on arrival
+  function scheduleShot(){
+    const vine=document.querySelector('.col.vine'), cs=getComputedStyle(vine);
+    const vd=parseFloat(cs.getPropertyValue('--vd'))||.65, gd=parseFloat(cs.getPropertyValue('--gd'))||.7;
+    const skyEl=document.querySelector('.sky'), shoot=document.getElementById('shoot');
+    if(reduce || !shoot){ skyEl && skyEl.classList.add('on'); return; }
+    setTimeout(()=>{
+      const stage=document.querySelector('.colonnade').getBoundingClientRect();
+      const h=document.querySelector('.letter.heart').getBoundingClientRect();
+      const sun=document.querySelector('.sun').getBoundingClientRect();
+      const x0=h.left+h.width*.5-stage.left, y0=h.top+h.height*.35-stage.top;
+      const x1=sun.left+sun.width*.5-stage.left, y1=sun.top+sun.height*.5-stage.top;
+      const xm=(x0+x1)/2, ym=Math.min(y0,y1)-Math.abs(x1-x0)*.28-40;
+      const ang=Math.atan2(y1-ym,x1-xm)*180/Math.PI;
+      shoot.querySelector('.tail').style.transform=`rotate(${ang}deg)`;
+      const anim=shoot.animate([
+        {transform:`translate(${x0}px,${y0}px) scale(.5)`,opacity:1},
+        {transform:`translate(${xm}px,${ym}px) scale(1.1)`,opacity:1,offset:.5},
+        {transform:`translate(${x1}px,${y1}px) scale(.3)`,opacity:.6}
+      ],{duration:720,easing:'cubic-bezier(.3,.2,.4,1)',fill:'forwards'});
+      anim.onfinish=()=>{ shoot.style.opacity='0'; skyEl.classList.add('on'); };
+    },(vd+gd)*1000+60);
+  }
 
   const colTrack=document.getElementById('colTrack');
   const cols=[...document.querySelectorAll('#cols .col')];
@@ -333,7 +366,7 @@
     // colonnade: hold for the intro, then chapters pass through the columns
     const p=prog(colTrack);
     const bg=clamp((p-.22)/.6,0,1);
-    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String((1-bg)*(document.body.classList.contains('loaded')?1:0));
+    colonnade.style.background=`color-mix(in srgb, #98B6E4 ${100-bg*100}%, #FFFFFF)`; sky.style.opacity=String(1-bg);
     const fade=clamp((p-.2)/.2,0,1);
     document.getElementById('cols').style.opacity=String(1-fade*.74);
     document.getElementById('cols').style.transform=`translateY(${fade*6}vh) scale(${1-fade*.06})`;
