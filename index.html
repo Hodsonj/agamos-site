@@ -143,7 +143,8 @@
   .chapter .num{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--ink-soft);margin-bottom:12px}
   .chapter h2{font-family:var(--serif);font-size:clamp(40px,6.4vw,92px);line-height:.98;letter-spacing:-.01em}
   .chapter h2 em{font-style:italic;color:var(--blue)}
-  .chapter p{max-width:520px;margin:20px auto 0;font-size:18px;color:var(--ink-soft)}
+  .chapter p{max-width:520px;margin:20px auto 0;font-size:18px;color:var(--ink-soft);text-wrap:balance}
+  .chapter h2{text-wrap:balance}
   .progress{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;transition:opacity .4s}
   .progress i{width:28px;height:2px;background:rgba(14,27,58,.18);display:block} .progress i.on{background:var(--ink)}
 
@@ -256,10 +257,10 @@
     <div class="ground"></div>
     <div class="cue">Scroll<i></i></div>
     <div class="chapters" id="chapters">
-      <div class="chapter"><div class="num">ἄγαμος · unmarried</div><h2>A word for<br><em>not yet.</em></h2><p>Agamos is a Greek-American dating show. Every season a new format.</p></div>
-      <div class="chapter"><div class="num">I</div><h2><em>Entertainment.</em></h2><p>Television made by Greek-Americans, with the drama our families bring for free.</p></div>
-      <div class="chapter"><div class="num">II</div><h2>Cultural<br><em>connection.</em></h2><p>The community is spread across the country. The show is a place for it to meet.</p></div>
-      <div class="chapter"><div class="num">III</div><h2><em>Matchmaking.</em></h2><p>The point of the whole thing. We are trying to cause weddings.</p></div>
+      <div class="chapter"><div class="num">ἄγαμος · unmarried</div><h2>A word for<br><em>not yet.</em></h2><p>Agamos is a Greek-American dating show. Every season a new&nbsp;format.</p></div>
+      <div class="chapter"><div class="num">I</div><h2><em>Entertainment.</em></h2><p>Television made by Greek-Americans, with the drama our families bring for&nbsp;free.</p></div>
+      <div class="chapter"><div class="num">II</div><h2>Cultural<br><em>connection.</em></h2><p>The community is spread across the country. The show is a place for it to&nbsp;meet.</p></div>
+      <div class="chapter"><div class="num">III</div><h2><em>Matchmaking.</em></h2><p>The point of the whole thing. We are trying to cause&nbsp;weddings.</p></div>
     </div>
     <div class="progress" id="progress"><i class="on"></i><i></i><i></i><i></i></div>
   </section>
